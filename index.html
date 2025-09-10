@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WhisperShield — Mobile UI (Prototype)</title>
+  <style>
+    :root{
+      --dark-navy: #0A192F;
+      --royal-blue: #2563EB;
+      --soft-grey: #F5F6FA;
+      --success-green: #22C55E;
+      --warning-red: #DC2626;
+      --card-radius: 14px;
+      --glass: rgba(255,255,255,0.85);
+      --shadow: 0 6px 18px rgba(9,16,28,0.25);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+
+    /* Mobile-first container */
+    html,body{height:100%;}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,var(--dark-navy) 0%, #082035 60%, #071427 100%);
+      color:#071427;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;align-items:center;justify-content:center;padding:20px;
+    }
+
+    .device{
+      width:390px; /* typical mobile preview */
+      max-width:100%;
+      height:820px;
+      background:var(--soft-grey);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;flex-direction:column;
+    }
+
+    /* Top bar */
+    .topbar{
+      background:linear-gradient(90deg,var(--royal-blue),var(--dark-navy));
+      padding:16px 18px;color:white;display:flex;align-items:center;gap:12px;
+    }
+    .topbar .logo{font-weight:700;letter-spacing:0.2px}
+    .topbar small{opacity:0.9;font-weight:500}
+
+    .screen{flex:1;padding:18px;overflow:auto;background:linear-gradient(180deg,#FFFFFF 0%, #FBFBFD 100%);}
+    .hidden{display:none}
+
+    /* Login Card */
+    .card{background:var(--glass);border-radius:var(--card-radius);padding:18px;box-shadow:var(--shadow);}
+    .center{display:flex;flex-direction:column;gap:14px;align-items:stretch}
+    input[type=text],input[type=password]{
+      padding:12px 14px;border-radius:10px;border:1px solid rgba(7,20,40,0.06);font-size:15px;outline:none;
+    }
+    .btn{display:inline-block;padding:12px 14px;border-radius:12px;text-align:center;font-weight:600;border:none;cursor:pointer}
+    .btn-primary{background:var(--royal-blue);color:white}
+    .btn-ghost{background:transparent;border:1px solid rgba(7,20,40,0.06)}
+
+    /* Scan screen */
+    .scan-area{display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:18px}
+    .mic-wrap{width:170px;height:170px;border-radius:999px;background:linear-gradient(180deg, #ffffff, #f2f6ff);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(37,99,235,0.14);position:relative}
+    .mic-btn{width:110px;height:110px;border-radius:999px;background:var(--royal-blue);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px;box-shadow:0 6px 16px rgba(37,99,235,0.28);cursor:pointer}
+
+    /* pulse */
+    .ring{position:absolute;border-radius:999px;animation:ping 1.8s infinite;opacity:0.7}
+    .ring.r1{width:220px;height:220px;background:rgba(37,99,235,0.08)}
+    .ring.r2{width:260px;height:260px;background:rgba(37,99,235,0.05);animation-delay:0.3s}
+    @keyframes ping{0%{transform:scale(.9);opacity:0.8}50%{transform:scale(1.08);opacity:0.2}100%{transform:scale(.9);opacity:0.8}}
+
+    .status{font-weight:700;font-size:18px}
+    .status.safe{color:var(--success-green)}
+    .status.fake{color:var(--warning-red)}
+    .status.listening{color:var(--royal-blue)}
+
+    /* Report list */
+    .report-list{display:flex;flex-direction:column;gap:12px}
+    .report-card{background:white;border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 6px 14px rgba(9,16,28,0.06)}
+    .badge{padding:6px 10px;border-radius:999px;font-weight:700}
+    .badge.safe{background:rgba(34,197,94,0.12);color:var(--success-green)}
+    .badge.fake{background:rgba(220,38,38,0.08);color:var(--warning-red)}
+
+    /* Alerts */
+    .alerts{display:flex;flex-direction:column;gap:10px}
+    .alert{padding:12px;border-radius:12px;background:linear-gradient(90deg,#fff,#fbfbfd);box-shadow:0 6px 12px rgba(9,16,28,0.04);display:flex;gap:12px;align-items:center}
+    .alert .icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+    .alert.fake .icon{background:rgba(220,38,38,0.1);color:var(--warning-red)}
+    .alert.safe .icon{background:rgba(34,197,94,0.08);color:var(--success-green)}
+
+    /* bottom nav */
+    .nav{height:74px;background:#fff;border-top:1px solid rgba(7,20,40,0.04);display:flex;align-items:center;justify-content:space-around}
+    .nav button{background:transparent;border:none;display:flex;flex-direction:column;gap:6px;align-items:center;font-weight:600;color:#0b1b2b}
+
+    /* small screens adjustments */
+    @media(min-width:720px){
+      .device{width:420px;height:860px}
+    }
+  </style>
+</head>
+<body>
+  <div class="device" role="application" aria-label="WhisperShield prototype">
+    <div class="topbar">
+      <div style="width:46px;height:46px;border-radius:10px;background:white;display:flex;align-items:center;justify-content:center;color:var(--royal-blue);font-weight:800">WS</div>
+      <div>
+        <div class="logo">WhisperShield</div>
+        <small>Protecting voice trust</small>
+      </div>
+    </div>
+
+    <!-- Screens -->
+    <main class="screen">
+      <!-- Login -->
+      <section id="login" class="view">
+        <div class="card center">
+          <h3 style="margin:0;color:var(--dark-navy)">Welcome back</h3>
+          <p style="margin:0;color:rgba(7,20,40,0.6)">Login to access WhisperShield</p>
+          <input type="text" placeholder="Email" id="email">
+          <input type="password" placeholder="Password" id="pass">
+          <button class="btn btn-primary" onclick="goto('scan')">Login</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+            <a href="#" style="font-size:13px;color:rgba(7,20,40,0.6)">Forgot password?</a>
+            <button class="btn btn-ghost" style="padding:8px 10px" onclick="goto('report')">Demo Reports</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scan -->
+      <section id="scan" class="view hidden">
+        <div style="text-align:center">
+          <h2 style="margin:0;color:var(--dark-navy)">Scan</h2>
+          <p style="margin-top:6px;color:rgba(7,20,40,0.6)">Tap to start listening to the call</p>
+        </div>
+
+        <div class="scan-area">
+          <div class="mic-wrap" aria-hidden>
+            <div class="ring r1" id="r1"></div>
+            <div class="ring r2" id="r2"></div>
+            <div class="mic-btn" id="mic" role="button" aria-pressed="false" onclick="toggleScan()">Start</div>
+          </div>
+
+          <div class="status listening" id="status">Idle</div>
+
+          <div style="width:100%;display:flex;justify-content:space-between">
+            <div style="flex:1;text-align:left"><small style="color:rgba(7,20,40,0.6)">Last scan</small><div style="font-weight:700">No scans yet</div></div>
+            <div style="flex:0"><button class="btn btn-ghost" onclick="goto('report')">View Reports</button></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Report -->
+      <section id="report" class="view hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0;color:var(--dark-navy)">Reports</h3>
+          <button class="btn btn-primary" onclick="exportReports()">Export</button>
+        </div>
+
+        <div style="margin-top:12px;" class="report-list" id="reports">
+          <!-- report cards injected here -->
+        </div>
+
+      </section>
+
+      <!-- Alerts -->
+      <section id="alerts" class="view hidden">
+        <h3 style="margin:0;color:var(--dark-navy)">Alerts</h3>
+        <div style="margin-top:12px" class="alerts" id="alertsList">
+          <!-- alerts injected here -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- nav -->
+    <nav class="nav" role="navigation" aria-label="Main navigation">
+      <button onclick="goto('scan')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 1v22" stroke="#0b1b2b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <small>Scan</small>
+      </button>
+      <button onclick="goto('report')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="#0b1b2b" stroke-width="1.5"></rect></svg>
+        <small>Reports</small>
+      </button>
+      <button onclick="goto('alerts')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2v2M12 20v2" stroke="#0b1b2b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+        <small>Alerts</small>
+      </button>
+      <button onclick="goto('login')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3" stroke="#0b1b2b" stroke-width="1.5"></circle><path d="M5 20c1.5-4 6-6 11-6s9.5 2 11 6" stroke="#0b1b2b" stroke-width="1.5"></path></svg>
+        <small>Account</small>
+      </button>
+    </nav>
+  </div>
+
+  <script>
+    // simple view router
+    function goto(view){
+      document.querySelectorAll('.view').forEach(s=>s.classList.add('hidden'));
+      document.getElementById(view).classList.remove('hidden');
+      window.scrollTo(0,0);
+    }
+
+    // sample storage
+    const reportsEl = document.getElementById('reports');
+    const alertsEl = document.getElementById('alertsList');
+
+    // mock report data
+    const sampleReports = [
+      {id:1,time:'2025-09-10 14:20',who:'Unknown Caller',result:'fake'},
+      {id:2,time:'2025-09-09 09:12',who:'Bank Helpline',result:'safe'},
+    ];
+
+    function renderReports(){
+      reportsEl.innerHTML='';
+      sampleReports.forEach(r=>{
+        const card = document.createElement('div');card.className='report-card';
+        card.innerHTML = `<div><div style='font-weight:700'>${r.who}</div><small style='color:rgba(7,20,40,0.6)'>${r.time}</small></div><div><span class='badge ${r.result}'>${r.result.toUpperCase()}</span></div>`;
+        reportsEl.appendChild(card);
+      });
+    }
+
+    function renderAlerts(){
+      alertsEl.innerHTML='';
+      sampleReports.forEach(r=>{
+        const a = document.createElement('div');a.className='alert '+(r.result==='fake'? 'fake':'safe');
+        a.innerHTML = `<div class='icon'>${r.result==='fake'? '⚠️':'🛡️'}</div><div><div style='font-weight:700'>${r.result==='fake'? 'Deepfake Detected':'Safe Call'}</div><small style='color:rgba(7,20,40,0.6)'>${r.who} • ${r.time}</small></div>`;
+        alertsEl.appendChild(a);
+      });
+    }
+
+    renderReports();renderAlerts();
+
+    // scanning simulation
+    let scanning=false;
+    function toggleScan(){
+      scanning = !scanning;
+      const mic = document.getElementById('mic');
+      const status = document.getElementById('status');
+      if(scanning){
+        mic.textContent='Stop';mic.setAttribute('aria-pressed','true');status.textContent='Listening...';status.className='status listening';
+        // simulate detection after 3s
+        setTimeout(()=>{
+          const isFake = Math.random() > 0.6; // random outcome
+          status.textContent = isFake? 'Fake Detected' : 'Safe';
+          status.className = 'status '+(isFake? 'fake':'safe');
+          // push results
+          sampleReports.unshift({id:Date.now(),time:new Date().toISOString().slice(0,16).replace('T',' '),who:'Live Call',result:isFake? 'fake':'safe'});
+          renderReports();renderAlerts();
+          // auto stop
+          scanning=false;mic.textContent='Start';mic.setAttribute('aria-pressed','false');
+        },3000);
+      } else {
+        mic.textContent='Start';mic.setAttribute('aria-pressed','false');status.textContent='Idle';status.className='status';
+      }
+    }
+
+    function exportReports(){
+      alert('Exporting reports... (demo)');
+    }
+
+    // start at login
+    goto('login');
+  </script>
+</body>
+</html>
